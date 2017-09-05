@@ -1,12 +1,12 @@
 # MQTT-monitor
 MQTT remote monitoring of temperature and humidity
 
-**GSM module instructions**
+**GSM module instructions**  
 http://www.instructables.com/id/GSMGPRS-Module-DIY-Kit/
 
-**DHT library**
+**DHT library**  
 https://github.com/winlinvip/SimpleDHT
 
-**TinyGSM library**
+**TinyGSM library**  
 https://github.com/vshymanskyy/TinyGSM
 
