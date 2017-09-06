@@ -35,8 +35,6 @@
 
 #include <TinyGsmClient.h>
 #include <PubSubClient.h>
-#include <OneWire.h>
-#include <SimpleDHT.h>
 
 // Your GPRS credentials
 // Leave empty, if missing user or pass
@@ -45,17 +43,17 @@ const char user[] = "";
 const char pass[] = "";
 
 // Use Hardware Serial on Mega, Leonardo, Micro
-//#define SerialAT Serial1
+#define SerialAT Serial1
 
 // or Software Serial on Uno, Nano
-#include <SoftwareSerial.h>
-SoftwareSerial SerialAT(2, 3); // RX, TX
+//#include <SoftwareSerial.h>
+//SoftwareSerial SerialAT(2, 3); // RX, TX
 
 TinyGsm modem(SerialAT);
 TinyGsmClient client(modem);
 PubSubClient mqtt(client);
 
-const char* broker = "kw.dy.fi";
+const char* broker = "test.mosquitto.org";
 
 const char* topicLed = "GsmClientTest/led";
 const char* topicInit = "GsmClientTest/init";
@@ -65,8 +63,6 @@ const char* topicLedStatus = "GsmClientTest/ledStatus";
 int ledStatus = LOW;
 
 long lastReconnectAttempt = 0;
-int pinDHT22 = 2;
-SimpleDHT22 dht22;
 
 void setup() {
   pinMode(LED_PIN, OUTPUT);
@@ -134,6 +130,7 @@ void loop() {
       }
     }
   }
+
 }
 
 void mqttCallback(char* topic, byte* payload, unsigned int len) {
@@ -145,23 +142,8 @@ void mqttCallback(char* topic, byte* payload, unsigned int len) {
 
   // Only proceed if incoming message's topic matches
   if (String(topic) == topicLed) {
-    // start working...
-  Serial.println("=================================");
-  Serial.println("Sample DHT22...");
-  
-  // read without samples.
-  // @remark We use read2 to get a float data, such as 10.1*C
-  //    if user doesn't care about the accurate data, use read to get a byte data, such as 10*C.
-  float temperature = 0;
-  float humidity = 0;
-  int err = SimpleDHTErrSuccess;
-  if ((err = dht22.read2(pinDHT22, &temperature, &humidity, NULL)) != SimpleDHTErrSuccess) {
-    Serial.print("Read DHT22 failed, err="); Serial.println(err);delay(2000);
-    return;
-  }
     ledStatus = !ledStatus;
     digitalWrite(LED_PIN, ledStatus);
     mqtt.publish(topicLedStatus, ledStatus ? "1" : "0");
   }
 }
-
