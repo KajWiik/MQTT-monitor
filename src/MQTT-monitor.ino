@@ -35,6 +35,8 @@
 
 #include <TinyGsmClient.h>
 #include <PubSubClient.h>
+#include <OneWire.h>
+#include <SimpleDHT.h>
 
 // Your GPRS credentials
 // Leave empty, if missing user or pass
