@@ -259,6 +259,6 @@ void sendbme(String topic) {
     Serial.println(charbuffer);
   }
 }
-  
+// foo
 
   //  mqtt.publish(topic, xxx);
