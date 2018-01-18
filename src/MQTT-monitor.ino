@@ -89,7 +89,7 @@ long lastReconnectAttempt = 0;
 unsigned long lastrun = millis();
 int state = 0;
 //#define PERIOD 5*60*1000
-#define PERIOD 3000
+#define PERIOD 5*60*1000
 
 bool bme_status;
 
@@ -171,26 +171,25 @@ boolean mqttConnect() {
 void loop() {
 
   if (mqtt.connected()) {
-    //  if (1) {
     if (millis() > (lastrun + PERIOD)) {
       switch(state) {
       case 0:
 	senddht22(Makuuhuone, topicMakuuhuone);
 	state++;
 	break;
-
+	
       case 1:
 	sendbme(topicOlohuone);
 	state++;
 	break;
-
+	
       case 2:
 	senddht22(WC, topicWC);
 	state++;
 	break;
 
       case 3:
-	// Foo
+	senddht22(Vierashuone, topicVierashuone);
 	state = 0;
 	lastrun = millis();
       }
