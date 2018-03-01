@@ -101,7 +101,7 @@ char valbuffer[VALBUFLEN];
 
 void setup() {
 
-  //  int countdownMS = Watchdog.enable(20000);
+  int countdownMS = Watchdog.enable(60000);
   
   pinMode(HEATER_PIN, OUTPUT);
   pinMode(GSM_RESET_PIN, OUTPUT);
@@ -206,6 +206,8 @@ void loop() {
       }
     }
   }
+  Watchdog.reset();
+
 }
 
 void mqttCallback(char* topic, byte* payload, unsigned int len) {
