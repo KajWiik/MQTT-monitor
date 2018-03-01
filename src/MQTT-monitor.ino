@@ -26,7 +26,7 @@
  **************************************************************/
 
 // Select your modem:
-#define TINY_GSM_MODEM_M590
+#define TINY_GSM_MODEM_SIM800
 
 #include <TinyGsmClient.h>
 #include <PubSubClient.h>
@@ -89,7 +89,7 @@ long lastReconnectAttempt = 0;
 unsigned long lastrun = millis();
 int state = 0;
 //#define PERIOD 5*60*1000
-#define PERIOD 5*60*1000
+#define PERIOD 15*1000
 
 bool bme_status;
 
@@ -101,7 +101,7 @@ char valbuffer[VALBUFLEN];
 
 void setup() {
 
-  int countdownMS = Watchdog.enable(20000);
+  //  int countdownMS = Watchdog.enable(20000);
   
   pinMode(HEATER_PIN, OUTPUT);
   pinMode(GSM_RESET_PIN, OUTPUT);
@@ -231,7 +231,8 @@ void senddht22(int pinDHT22, char* topic) {
 
   if ((err = dht22.read2(pinDHT22, &temperature, &humidity, NULL)) != SimpleDHTErrSuccess) {
     delay(2000);
-    Serial.println("DHT init failed");
+    Serial.print("DHT init failed, pin ");
+    Serial.println(pinDHT22);
     return;
   }
 
@@ -244,12 +245,15 @@ void senddht22(int pinDHT22, char* topic) {
   strcpy(topicbuffer + len, humprefix);
   dtostrf(humidity, 0, 1, valbuffer);
   mqtt.publish(topicbuffer, valbuffer);
+  // mqtt.publish(topicbuffer, "Test");
 }
   
 void sendbme(char* topic) {
   float temperature = 0;
   float humidity = 0;
   size_t len = strlen(topic);
+    Serial.print("BME status ");
+   Serial.println(bme_status);
 
   if (bme_status) {
     strcpy(topicbuffer,topic);
