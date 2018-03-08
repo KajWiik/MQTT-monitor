@@ -38,7 +38,7 @@
 // Edit BME280_ADDRESS (0x76)
 #include <Adafruit_BME280.h>
 
-#include <Adafruit_SleepyDog.h>
+//#include <Adafruit_SleepyDog.h>
 
 // Your GPRS credentials
 // Leave empty, if missing user or pass
@@ -101,7 +101,7 @@ char valbuffer[VALBUFLEN];
 
 void setup() {
 
-  int countdownMS = Watchdog.enable(60000);
+  //  int countdownMS = Watchdog.enable(60000);
   
   pinMode(HEATER_PIN, OUTPUT);
   pinMode(GSM_RESET_PIN, OUTPUT);
@@ -152,7 +152,7 @@ void setup() {
   mqtt.setCallback(mqttCallback);
 
   bme_status = bme.begin();
-  Watchdog.reset();
+  //  Watchdog.reset();
 }
 
 boolean mqttConnect() {
@@ -206,7 +206,7 @@ void loop() {
       }
     }
   }
-  Watchdog.reset();
+  //  Watchdog.reset();
 
 }
 
@@ -273,6 +273,3 @@ void sendbme(char* topic) {
     mqtt.publish(topicbuffer, valbuffer);
   }
 }
-// foo
-
-  //  mqtt.publish(topic, xxx);
