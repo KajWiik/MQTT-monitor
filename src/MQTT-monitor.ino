@@ -89,7 +89,7 @@ long lastReconnectAttempt = 0;
 unsigned long lastrun = millis();
 int state = 0;
 //#define PERIOD 5*60*1000
-#define PERIOD 15*1000
+#define PERIOD 30*1000
 
 bool bme_status;
 
@@ -151,7 +151,7 @@ void setup() {
   mqtt.setServer(broker, 1883);
   mqtt.setCallback(mqttCallback);
 
-  bme_status = bme.begin();
+  //  bme_status = bme.begin();
   //  Watchdog.reset();
 }
 
@@ -169,43 +169,73 @@ boolean mqttConnect() {
 }
 
 void loop() {
-
-  if (mqtt.connected()) {
-    if (millis() > (lastrun + PERIOD)) {
-      switch(state) {
-      case 0:
-	senddht22(Makuuhuone, topicMakuuhuone);
-	state++;
-	break;
+  
+  Serial.print("millis ");
+  Serial.println(millis());
+  //  if (mqtt.connected()) {
+  if (millis() > (lastrun + PERIOD)) {
+      if (mqtt.connect("Karttula", mqtt_user, mqtt_pass)) {
+      
+	switch(state) {
+	case 0:
+	  senddht22(Makuuhuone, topicMakuuhuone);
+	  state++;
+	  break;
+	  
+	case 1:
+	  sendbme(topicOlohuone);
+	  state++;
+	  break;
+	  
+	case 2:
+	  senddht22(WC, topicWC);
+	  state++;
+	  break;
+	  
+	case 3:
+	  senddht22(Vierashuone, topicVierashuone);
+	  state = 0;
+	  lastrun = millis();
+	}
+      } else {
+	// Restart takes quite some time
+	// To skip it, call init() instead of restart()
+	Serial.println("Initializing modem...");
+	modem.restart();
 	
-      case 1:
-	sendbme(topicOlohuone);
-	state++;
-	break;
-	
-      case 2:
-	senddht22(WC, topicWC);
-	state++;
-	break;
+	// Unlock your SIM card with a PIN
+	//modem.simUnlock("1234");
 
-      case 3:
-	senddht22(Vierashuone, topicVierashuone);
-	state = 0;
-	lastrun = millis();
+	Serial.print("Waiting for network...");
+	if (!modem.waitForNetwork()) {
+	  Serial.println(" fail");
+	  while (true);
+	}
+	Serial.println(" OK");
+
+	Serial.print("Connecting to ");
+	Serial.print(apn);
+	if (!modem.gprsConnect(apn, user, pass)) {
+	  Serial.println(" fail");
+	  while (true);
+	}
+	Serial.println(" OK");
       }
     }
+    
     delay(1000);
     mqtt.loop();
-  } else {
-    // Reconnect every 10 seconds
-    unsigned long t = millis();
-    if (t - lastReconnectAttempt > 10000L) {
-      lastReconnectAttempt = t;
-      if (mqttConnect()) {
-        lastReconnectAttempt = 0;
-      }
-    }
-  }
+  /* } else { */
+  /*   // Reconnect every 10 seconds */
+  /*   unsigned long t = millis(); */
+  /*   if (t - lastReconnectAttempt > 10000L) { */
+  /*     lastReconnectAttempt = t; */
+  /*     if (mqttConnect()) { */
+  /*       lastReconnectAttempt = 0; */
+  /*     } */
+  /*   } */
+  /* } */
+    
   //  Watchdog.reset();
 
 }
@@ -253,9 +283,10 @@ void senddht22(int pinDHT22, char* topic) {
 void sendbme(char* topic) {
   float temperature = 0;
   float humidity = 0;
+  bme_status = bme.begin();
   size_t len = strlen(topic);
-    Serial.print("BME status ");
-   Serial.println(bme_status);
+  Serial.print("BME status ");
+  Serial.println(bme_status);
 
   if (bme_status) {
     strcpy(topicbuffer,topic);
