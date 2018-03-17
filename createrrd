@@ -1,0 +1,45 @@
+rrdtool create karttula_oh_t.rrd \
+        --step 30 \
+        DS:val:GAUGE:600:U:U \
+        RRA:AVERAGE:0.5:1:120 \
+        RRA:AVERAGE:0.5:10:288 \
+        RRA:AVERAGE:0.5:30:672 \
+        RRA:AVERAGE:0.5:120:720 \
+        RRA:AVERAGE:0.5:360:2920 \
+        RRA:AVERAGE:0.5:720:4380 
+rrdtool create karttula_oh_rh.rrd \
+        --step 30 \
+        DS:val:GAUGE:600:U:U \
+        RRA:AVERAGE:0.5:1:120 \
+        RRA:AVERAGE:0.5:10:288 \
+        RRA:AVERAGE:0.5:30:672 \
+        RRA:AVERAGE:0.5:120:720 \
+        RRA:AVERAGE:0.5:360:2920 \
+        RRA:AVERAGE:0.5:720:4380 
+rrdtool create karttula_oh_p.rrd \
+        --step 30 \
+        DS:val:GAUGE:600:U:U \
+        RRA:AVERAGE:0.5:1:120 \
+        RRA:AVERAGE:0.5:10:288 \
+        RRA:AVERAGE:0.5:30:672 \
+        RRA:AVERAGE:0.5:120:720 \
+        RRA:AVERAGE:0.5:360:2920 \
+        RRA:AVERAGE:0.5:720:4380 
+rrdtool create karttula_wc_t.rrd \
+        --step 30 \
+        DS:val:GAUGE:600:U:U \
+        RRA:AVERAGE:0.5:1:120 \
+        RRA:AVERAGE:0.5:10:288 \
+        RRA:AVERAGE:0.5:30:672 \
+        RRA:AVERAGE:0.5:120:720 \
+        RRA:AVERAGE:0.5:360:2920 \
+        RRA:AVERAGE:0.5:720:4380 
+rrdtool create karttula_wc_rh.rrd \
+        --step 30 \
+        DS:val:GAUGE:600:U:U \
+        RRA:AVERAGE:0.5:1:120 \
+        RRA:AVERAGE:0.5:10:288 \
+        RRA:AVERAGE:0.5:30:672 \
+        RRA:AVERAGE:0.5:120:720 \
+        RRA:AVERAGE:0.5:360:2920 \
+        RRA:AVERAGE:0.5:720:4380 
