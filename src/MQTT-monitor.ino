@@ -26,7 +26,7 @@
  **************************************************************/
 
 // Select your modem:
-#define TINY_GSM_MODEM_M590
+#define TINY_GSM_MODEM_SIM800
 
 #include <TinyGsmClient.h>
 #include <PubSubClient.h>
@@ -38,7 +38,7 @@
 // Edit BME280_ADDRESS (0x76)
 #include <Adafruit_BME280.h>
 
-#include <Adafruit_SleepyDog.h>
+//#include <Adafruit_SleepyDog.h>
 
 // Your GPRS credentials
 // Leave empty, if missing user or pass
@@ -89,7 +89,7 @@ long lastReconnectAttempt = 0;
 unsigned long lastrun = millis();
 int state = 0;
 //#define PERIOD 5*60*1000
-#define PERIOD 5*60*1000
+#define PERIOD 30*1000
 
 bool bme_status;
 
@@ -101,7 +101,7 @@ char valbuffer[VALBUFLEN];
 
 void setup() {
 
-  int countdownMS = Watchdog.enable(20000);
+  //  int countdownMS = Watchdog.enable(60000);
   
   pinMode(HEATER_PIN, OUTPUT);
   pinMode(GSM_RESET_PIN, OUTPUT);
@@ -151,8 +151,8 @@ void setup() {
   mqtt.setServer(broker, 1883);
   mqtt.setCallback(mqttCallback);
 
-  bme_status = bme.begin();
-  Watchdog.reset();
+  //  bme_status = bme.begin();
+  //  Watchdog.reset();
 }
 
 boolean mqttConnect() {
@@ -169,43 +169,75 @@ boolean mqttConnect() {
 }
 
 void loop() {
-
-  if (mqtt.connected()) {
-    if (millis() > (lastrun + PERIOD)) {
-      switch(state) {
-      case 0:
-	senddht22(Makuuhuone, topicMakuuhuone);
-	state++;
-	break;
+  
+  Serial.print("millis ");
+  Serial.println(millis());
+  //  if (mqtt.connected()) {
+  if (millis() > (lastrun + PERIOD)) {
+      if (mqtt.connect("Karttula", mqtt_user, mqtt_pass)) {
+      
+	switch(state) {
+	case 0:
+	  senddht22(Makuuhuone, topicMakuuhuone);
+	  state++;
+	  break;
+	  
+	case 1:
+	  sendbme(topicOlohuone);
+	  state++;
+	  break;
+	  
+	case 2:
+	  senddht22(WC, topicWC);
+	  state++;
+	  break;
+	  
+	case 3:
+	  senddht22(Vierashuone, topicVierashuone);
+	  state = 0;
+	  lastrun = millis();
+	}
+      } else {
+	// Restart takes quite some time
+	// To skip it, call init() instead of restart()
+	Serial.println("Initializing modem...");
+	modem.restart();
 	
-      case 1:
-	sendbme(topicOlohuone);
-	state++;
-	break;
-	
-      case 2:
-	senddht22(WC, topicWC);
-	state++;
-	break;
+	// Unlock your SIM card with a PIN
+	//modem.simUnlock("1234");
 
-      case 3:
-	senddht22(Vierashuone, topicVierashuone);
-	state = 0;
-	lastrun = millis();
+	Serial.print("Waiting for network...");
+	if (!modem.waitForNetwork()) {
+	  Serial.println(" fail");
+	  while (true);
+	}
+	Serial.println(" OK");
+
+	Serial.print("Connecting to ");
+	Serial.print(apn);
+	if (!modem.gprsConnect(apn, user, pass)) {
+	  Serial.println(" fail");
+	  while (true);
+	}
+	Serial.println(" OK");
       }
     }
+    
     delay(1000);
     mqtt.loop();
-  } else {
-    // Reconnect every 10 seconds
-    unsigned long t = millis();
-    if (t - lastReconnectAttempt > 10000L) {
-      lastReconnectAttempt = t;
-      if (mqttConnect()) {
-        lastReconnectAttempt = 0;
-      }
-    }
-  }
+  /* } else { */
+  /*   // Reconnect every 10 seconds */
+  /*   unsigned long t = millis(); */
+  /*   if (t - lastReconnectAttempt > 10000L) { */
+  /*     lastReconnectAttempt = t; */
+  /*     if (mqttConnect()) { */
+  /*       lastReconnectAttempt = 0; */
+  /*     } */
+  /*   } */
+  /* } */
+    
+  //  Watchdog.reset();
+
 }
 
 void mqttCallback(char* topic, byte* payload, unsigned int len) {
@@ -231,7 +263,8 @@ void senddht22(int pinDHT22, char* topic) {
 
   if ((err = dht22.read2(pinDHT22, &temperature, &humidity, NULL)) != SimpleDHTErrSuccess) {
     delay(2000);
-    Serial.println("DHT init failed");
+    Serial.print("DHT init failed, pin ");
+    Serial.println(pinDHT22);
     return;
   }
 
@@ -244,12 +277,16 @@ void senddht22(int pinDHT22, char* topic) {
   strcpy(topicbuffer + len, humprefix);
   dtostrf(humidity, 0, 1, valbuffer);
   mqtt.publish(topicbuffer, valbuffer);
+  // mqtt.publish(topicbuffer, "Test");
 }
   
 void sendbme(char* topic) {
   float temperature = 0;
   float humidity = 0;
+  bme_status = bme.begin();
   size_t len = strlen(topic);
+  Serial.print("BME status ");
+  Serial.println(bme_status);
 
   if (bme_status) {
     strcpy(topicbuffer,topic);
@@ -267,6 +304,3 @@ void sendbme(char* topic) {
     mqtt.publish(topicbuffer, valbuffer);
   }
 }
-// foo
-
-  //  mqtt.publish(topic, xxx);
