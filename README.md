@@ -16,3 +16,5 @@ https://github.com/winlinvip/SimpleDHT
 **TinyGSM library**  
 https://github.com/vshymanskyy/TinyGSM
 
+**Low power regulator**
+http://fi.farnell.com/maxim-integrated-products/max17223elt-t/dc-dc-conv-sync-boost-2mhz-udfn/dp/2803289?st=max1722
